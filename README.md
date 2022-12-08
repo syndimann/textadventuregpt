@@ -2,6 +2,7 @@
 
 Encounter the wonderful world of ai generated textadventures from ChatGPT
 
+![Text Adventure GPT How To](textadventuregpt.gif)
 
 ## Get your session token
 

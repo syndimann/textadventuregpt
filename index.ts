@@ -1,10 +1,9 @@
-#!/usr/bin/env node
-
 import enquirer from "enquirer";
-import ora from "ora";
 
 import { ChatGPTClient } from "./client.js";
 import { ensureSessionToken } from "./config.js";
+
+// Thanks to https://github.com/RomanHotsiy/commitgpt for the foundation of this
 
 const myOwnAdvanture = "[ I want to create my own adventure ]";
 
@@ -28,7 +27,6 @@ const topics = [
 ];
 
 async function run() {
-
   const api = new ChatGPTClient({
     sessionToken: await ensureSessionToken(),
   });
@@ -68,6 +66,10 @@ async function run() {
       !introSent ? introMessage : answer.message
     );
 
+    if (choices.length === 0) {
+      break;
+    }
+
     try {
       answer = await enquirer.prompt<{ message: string }>({
         type: "select",
@@ -82,6 +84,8 @@ async function run() {
       process.exit(1);
     }
   }
+
+  console.log("The End");
 }
 
 async function getMessages(

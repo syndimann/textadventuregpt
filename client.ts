@@ -1,8 +1,10 @@
 import { createParser } from "eventsource-parser";
-import { v4 as uuidv4 } from "uuid";
 import ExpiryMap from "expiry-map";
-import fetch, { Response } from "node-fetch";
+import fetch from "node-fetch";
 import ora from "ora";
+import { v4 as uuidv4 } from "uuid";
+
+// Thanks to https://github.com/RomanHotsiy/commitgpt for the foundation of this
 
 const spinner = ora();
 
@@ -39,7 +41,7 @@ export async function refreshAccessToken(sessionToken: string) {
 export class ChatGPTClient {
   constructor(
     public config: ClientConfig,
-    public converstationId: string = '',
+    public converstationId: string = "",
     public parentId = uuidv4(),
     public firstRequest = true
   ) {}
@@ -67,20 +69,19 @@ export class ChatGPTClient {
       ],
       model: "text-davinci-002-render",
       conversation_id: this.converstationId,
-      parent_message_id: this.parentId
+      parent_message_id: this.parentId,
     };
-    
 
-    spinner.start(this.firstRequest ? 'Starting Game' : 'Loading');
+    spinner.start(this.firstRequest ? "Starting Game" : "Loading");
 
     if (this.firstRequest) {
-      delete body.conversation_id
+      delete body.conversation_id;
       this.firstRequest = false;
     }
 
     let firstResponse = true;
 
-    return new Promise(((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.fetchSSE("https://chat.openai.com/backend-api/conversation", {
         method: "POST",
         headers: {
@@ -90,7 +91,7 @@ export class ChatGPTClient {
         },
         body: JSON.stringify(body),
         onMessage: (message: string) => {
-          if(firstResponse) {
+          if (firstResponse) {
             spinner.stop();
             console.log("");
             firstResponse = false;
@@ -100,14 +101,14 @@ export class ChatGPTClient {
             return resolve(response);
           }
           const data = JSON.parse(message);
-          const text : string = data.message?.content?.parts?.[0];
+          const text: string = data.message?.content?.parts?.[0];
           this.parentId = data.message.id;
-          
+
           if (!this.converstationId) {
             this.converstationId = data.conversation_id;
           }
 
-          if(!!text) {
+          if (!!text) {
             process.stdout.write(text.substring(response.length));
           }
 
@@ -116,7 +117,7 @@ export class ChatGPTClient {
           }
         },
       }).catch(reject);
-    }));
+    });
   }
 
   async fetchSSE(resource, options) {
